@@ -1,4 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useCallback,
+  useState,
+} from "react";
 
 const Index = () => {
   const links = [
@@ -247,57 +251,100 @@ const Index = () => {
   const [currentVid, setCurrentVid] = useState(
     `https://www.youtube.com/embed/${links[0].href}?si=yZ4Vp14zKTVIpxV0`
   );
-
-  const targetRef = useRef();
   const [height, setHeight] = useState({});
+  const [listHeight, setListHeight] = useState({});
+  const [screenWidth, setScreenWidth] = useState(0);
 
-  useLayoutEffect(()=>{
-    console.log(targetRef.current.clientWidth);
+  // screen width observer
+  const screenWidthRef = useCallback((nodeA) => {
+    if (!nodeA) return;
+    const resizeObserver = new ResizeObserver(() => {
+      setScreenWidth(nodeA.clientWidth);
+    });
+    resizeObserver.observe(nodeA);
+  }, []);
 
-  },[])
+  // player width observer
+  const targetRef = useCallback((node) => {
+    if (!node) return;
+    const resizeObserver = new ResizeObserver(() => {
+      const styleHeightProp = {
+        height: String(Math.round(node.clientWidth * 0.5625)) + "px",
+      };
+      setHeight(styleHeightProp);
+    });
+    resizeObserver.observe(node);
+  }, []);
+
+  // sets list height on small pagewidth breakpoint of 640px
+  useEffect(()=>{
+    if (screenWidth >= 640) {
+      setListHeight(height);
+    } else {
+      setListHeight({});
+    }
+  },[screenWidth])
+
+  // fetch video list data from yt (this should be used by site server once per week or so to avoid excessive api usage)
+  // const handleFetchData = async () => {
+  //   const res = await fetch("https://jsonplaceholder.typicode.com/photos");
+  //   const data = await res.json();
+  //   console.log(data);
+  // };
+
+  // useEffect(() => {
+  //   handleFetchData();
+  // }, []);
 
   return (
-    <div className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] min-h-screen">
-      <div className="w-[1000px]">
+    <div
+      className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] min-h-screen"
+      ref={screenWidthRef}
+    >
+      <div className="max-w-[1000px]">
         <img src="/images/elimHeader.png" alt="" className="w-full" />
 
         {/* main container */}
-        <div className="bg-[#FCF8F1]">
-          <div className="flex flex-row justify-center w-full">
+        <div className="sm:bg-[#FCF8F1] p-2 sm:p-10 ">
+        <h1 className="font-bold text-3xl mb-4">Sunday Services</h1>
+          <div
+            className="flex flex-col sm:flex-row gap-4 sm:gap-10 sm:justify-center w-full"
+            // style={height}
+          >
             {/* media player */}
-
-          <div className="w-full" ref={targetRef}>
-            <iframe
-              style={height}
-              className="w-full aspect-16/9"
-              src={currentVid}
-              title="YouTube video player"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen
-            ></iframe>
-          </div>
+            <div className="w-full" ref={targetRef}>
+              <iframe
+                className="w-full"
+                style={height}
+                src={currentVid}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              ></iframe>
+            </div>
 
             {/* recordings list */}
-            <div className="flex flex-col gap-2 bg-red-400 ">
-              <div className="w-full h-full">
-                <h3 className="font-bold text-xl">Available Recordings</h3>
-                <h3 className="font-bold text-xl">Available Recordings</h3>
-              </div>
-              {/* <ul className="overflow-y-scroll">
-                    {links.map((el, ind) => {
-                      return (
-                        <li
-                          key={ind}
-                          className="cursor-pointer text-blue-400 font-semibold whitespace-nowrap pr-4 "
-                          onClick={() => setCurrentVid(`https://www.youtube.com/embed/${el.href}?si=yZ4Vp14zKTVIpxV0`)}
-                        >
-                          {el.date}
-                        </li>
-                      );
-                    })}
-                  </ul> */}
+            <div className="flex flex-col items-center sm:items-start">
+              <ul style={listHeight} className="sm:overflow-y-scroll h-full">
+                <h3 className="font-bold text-3xl sm:text-xl mb-1">Dates</h3>
+                {links.map((el, ind) => {
+                  return (
+                    <li
+                      key={ind}
+                      className="cursor-pointer font-semibold whitespace-nowrap pr-4 text-2xl sm:text-lg"
+                      onClick={() =>
+                        setCurrentVid(
+                          `https://www.youtube.com/embed/${el.href}?si=yZ4Vp14zKTVIpxV0`
+                        )
+                      }
+                    >
+                      {el.date}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         </div>
