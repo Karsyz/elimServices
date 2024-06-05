@@ -244,8 +244,8 @@ const Index = () => {
   //   },
   // ];
 
-  const [height, setHeight] = useState({ height: "300px" });
-  const [listHeight, setListHeight] = useState({ height: "300px" });
+  const [height, setHeight] = useState('');
+  const [listHeight, setListHeight] = useState('');
   const [screenWidth, setScreenWidth] = useState(0);
   const [links, setLinks] = useState([
     {
@@ -559,27 +559,53 @@ const Index = () => {
     if (!nodeA) return;
     const resizeObserver = new ResizeObserver(() => {
       setScreenWidth(nodeA.clientWidth);
+      if (nodeA.clientWidth > 612) {
+        console.log(true);
+        setListHeight(height);
+      } else {
+        setListHeight('');
+        console.log(false);
+      }
     });
+
     resizeObserver.observe(nodeA);
+    return () => {
+      if (nodeA) {
+        resizeObserver.unobserve(nodeA);
+      } else {
+        resizeObserver.disconnect();
+      }
+    };
   }, []);
 
   // player width observer
   const targetRef = useCallback((node) => {
     if (!node) return;
     const resizeObserver = new ResizeObserver(() => {
-      setHeight({ height: node.offsetHeight });
+      setHeight( String(Math.round(node.clientWidth * 0.5625)) + "px" )
     });
+
     resizeObserver.observe(node);
+
+    return () => {
+      if (node) {
+        console.log("runs");
+        resizeObserver.unobserve(node);
+      } else {
+        console.log("runs");
+        resizeObserver.disconnect();
+      }
+    };
   }, []);
 
   // sets list height on small page width breakpoint of 640px
-  useEffect(() => {
-    if (screenWidth > 621) {
-      setListHeight(height);
-    } else {
-      setListHeight({});
-    }
-  }, [screenWidth]);
+  // useEffect(() => {
+  //   if (screenWidth > 621) {
+  //     setListHeight(height);
+  //   } else {
+  //     setListHeight({});
+  //   }
+  // }, [screenWidth]);
 
   // useEffect(() => {
   //   console.log(height, listHeight)
@@ -612,25 +638,27 @@ const Index = () => {
   return (
     <div
       id="top"
-      className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] min-h-screen !scroll-smooth"
+      className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] h-screen overflow-hidden !scroll-smooth"
       ref={screenWidthRef}
     >
       <div className="max-w-[1000px]">
         <img src="/images/elimHeader.png" alt="" className="w-full" />
 
         {/* main container */}
-        <div className="sm:bg-[#FCF8F1] p-2 sm:px-10 sm:pb-10">
+        <div className="sm:bg-[#FCF8F1] p-2 sm:px-10 sm:pb-10 ">
           <h1 className="font-bold text-2xl mb-4">Sunday Services</h1>
+          
           <div
-            className="flex flex-col sm:flex-row gap-4 sm:gap-10 sm:justify-center w-full"
-            style={listHeight}
+            className="flex flex-col sm:flex-row gap-4 sm:gap-10 sm:justify-center w-full sm:bg-red-400"
+            style={{height:listHeight}}
           >
             {/* media player */}
             <div className="w-full">
               <iframe
                 id="vid"
                 ref={targetRef}
-                className="w-full h-auto aspect-16/9"
+                style={{height: height}}
+                className="w-full"
                 src={currentVid}
                 title="YouTube video player"
                 frameBorder="0"
@@ -641,8 +669,8 @@ const Index = () => {
             </div>
 
             {/* recordings list */}
-            <div className="">
-              <ul className="flex flex-col items-center sm:items-start sm:overflow-y-scroll gap-2 h-full w-full px-2">
+            {/* <div className=""> */}
+              <ul className="flex flex-col items-center sm:items-start sm:overflow-y-scroll gap-2 px-2">
                 {/* <h3 className="font-bold text-3xl sm:text-xl mb-1">Dates</h3> */}
                 {links.map((el, ind) => {
                   return (
@@ -668,7 +696,7 @@ const Index = () => {
                   );
                 })}
               </ul>
-            </div>
+            {/* </div> */}
           </div>
         </div>
       </div>
