@@ -1,15 +1,24 @@
-import { useState } from "react";
-import content from "../Data/Content";
+import { useState, useEffect } from "react";
+import ytContent from "../Data/Content";
 
 const Index = () => {
-  const [links, setLinks] = useState(content.sort((a, b) => a.date - b.date));
-  const [currentVid, setCurrentVid] = useState(
-    `https://www.youtube.com/embed/${links[0].href}?si=yZ4Vp14zKTVIpxV0`
-  );
+  const [links, setLinks] = useState(ytContent);
+  // content.sort((a, b) => a.date - b.date)
 
-  // fetch video list data from yt (this should be used by site server once per week or so to avoid excessive api usage)
+  const [currentVid, setCurrentVid] = useState(
+    `https://www.youtube.com/embed/${links[0]?.id?.videoId}?si=yZ4Vp14zKTVIpxV0`
+  );
+ 
+  // fetch video list data from yt (this should be used by site server once per week or so to avoid excessive yt api usage)
   // const handleFetchData = async () => {
-  //   const res = await fetch("https://jsonplaceholder.typicode.com/photos");
+  //   const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&key=${process.env.REACT_APP_API_KEY}&channelId=${process.env.REACT_APP_CHANNEL_ID}&maxResults=50&order=date&publishedAfter=2023-01-01T00:00:00Z&type=video`);
+  //   const data = await res.json();
+  //   console.log(data.items);
+  //   setLinks(data.items)
+  // };
+
+  // const handleFetchData = async () => {
+  //   const res = await fetch(`localhost:8888/hello`);
   //   const data = await res.json();
   //   console.log(data);
   // };
@@ -17,6 +26,20 @@ const Index = () => {
   // useEffect(() => {
   //   handleFetchData();
   // }, []);
+
+  // useEffect(() => {
+    // console.log(links)
+    //  console.log(`https://www.youtube.com/embed/${links[0]?.id?.videoId}?si=yZ4Vp14zKTVIpxV0`)
+  // }, [links]);
+
+
+
+  const handleCurrentVid = (vid, index) => {
+    setCurrentVid(
+      `https://www.youtube.com/embed/${vid}?si=yZ4Vp14zKTVIpxV0`
+    );
+   handleSelected(index);
+  }
 
   const handleSelected = (index) => {
     // console.log(index)
@@ -65,17 +88,12 @@ const Index = () => {
               <li
                 key={ind}
                 className="cursor-pointer font-semibold whitespace-nowrap pr-4 text-2xl sm:text-lg p-4 rounded-md hover:!bg-[#a2dbc2] w-full"
-                onClick={(evt) => {
-                  setCurrentVid(
-                    `https://www.youtube.com/embed/${el.href}?si=yZ4Vp14zKTVIpxV0`
-                  );
-                  handleSelected(ind);
-                }}
+                onClick={() => handleCurrentVid(el?.id?.videoId, ind)}
                 style={{
                   background: el.selected ? "#8CD2B4" : "#8CAAD2",
                 }}
               >
-                {el.date}
+                {new Date(el?.snippet?.publishedAt).toString().slice(4,15)}
               </li>
             );
           })}
