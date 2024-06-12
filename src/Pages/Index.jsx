@@ -1,48 +1,30 @@
 import { useState, useEffect } from "react";
-import ytContent from "../Data/Content";
 
 const Index = () => {
-  const [links, setLinks] = useState(ytContent);
+  const [links, setLinks] = useState([]);
   // content.sort((a, b) => a.date - b.date)
 
-  const [currentVid, setCurrentVid] = useState(
-    `https://www.youtube.com/embed/${links[0]?.id?.videoId}?si=yZ4Vp14zKTVIpxV0`
-  );
- 
-  // fetch video list data from yt (this should be used by site server once per week or so to avoid excessive yt api usage)
-  // const handleFetchData = async () => {
-  //   const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&key=${process.env.REACT_APP_API_KEY}&channelId=${process.env.REACT_APP_CHANNEL_ID}&maxResults=50&order=date&publishedAfter=2023-01-01T00:00:00Z&type=video`);
-  //   const data = await res.json();
-  //   console.log(data.items);
-  //   setLinks(data.items)
-  // };
+  const [currentVid, setCurrentVid] = useState("");
 
-  // const handleFetchData = async () => {
-  //   const res = await fetch(`localhost:8888/hello`);
-  //   const data = await res.json();
-  //   console.log(data);
-  // };
+  const handleFetchData = async () => {
+    const res = await fetch(`/.netlify/functions/getVids`);
+    const data = await res.json();
+    setLinks(data.items);
+    setCurrentVid(
+      `https://www.youtube.com/embed/${data.items[0]?.snippet?.resourceId?.videoId}?si=yZ4Vp14zKTVIpxV0`
+    );
+  };
 
-  // useEffect(() => {
-  //   handleFetchData();
-  // }, []);
-
-  // useEffect(() => {
-    // console.log(links)
-    //  console.log(`https://www.youtube.com/embed/${links[0]?.id?.videoId}?si=yZ4Vp14zKTVIpxV0`)
-  // }, [links]);
-
-
+  useEffect(() => {
+    handleFetchData();
+  }, []);
 
   const handleCurrentVid = (vid, index) => {
-    setCurrentVid(
-      `https://www.youtube.com/embed/${vid}?si=yZ4Vp14zKTVIpxV0`
-    );
-   handleSelected(index);
-  }
+    setCurrentVid(`https://www.youtube.com/embed/${vid}?si=yZ4Vp14zKTVIpxV0`);
+    handleSelected(index);
+  };
 
   const handleSelected = (index) => {
-    // console.log(index)
     setLinks(
       links.map((el, ind) => {
         if (ind === index) {
@@ -55,9 +37,7 @@ const Index = () => {
   };
 
   return (
-    <div
-      className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] h-screen"
-    >
+    <div className="flex flex-col items-center w-full bg-gradient-to-b from-[#FAF0E5] to-[#D2B48C] h-screen">
       <img
         src="/images/elimHeader.png"
         alt=""
@@ -83,17 +63,24 @@ const Index = () => {
 
         {/* recordings list */}
         <ul className="flex flex-col items-center sm:items-start overflow-y-scroll gap-2 px-2 flex-initial">
-          {links.map((el, ind) => {
+          {links?.map((el, ind) => {
             return (
               <li
                 key={ind}
-                className="cursor-pointer font-semibold whitespace-nowrap pr-4 text-2xl sm:text-lg p-4 rounded-md hover:!bg-[#a2dbc2] w-full"
-                onClick={() => handleCurrentVid(el?.id?.videoId, ind)}
+                className="cursor-pointer sm:text-lg p-4 pr-4 rounded-md hover:!bg-[#a2dbc2] w-full sm:max-w-[300px]"
+                onClick={() =>
+                  handleCurrentVid(el?.snippet?.resourceId?.videoId, ind)
+                }
                 style={{
                   background: el.selected ? "#8CD2B4" : "#8CAAD2",
                 }}
               >
-                {new Date(el?.snippet?.publishedAt).toString().slice(4,15)}
+                
+                <h4 className="font-bold text-xl">{el.snippet.title}</h4>
+                <span className="font-semibold">{new Date(el?.snippet?.publishedAt).toString().slice(4, 15)}</span>
+                <p className="italic">
+                  {el.snippet.description}
+                </p>
               </li>
             );
           })}
