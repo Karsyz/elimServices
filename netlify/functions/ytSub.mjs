@@ -7,11 +7,6 @@ export async function handler(event, context) {
       statusCode: 200,
       body: query["hub.challenge"],
     };
-  } else {
-    return {
-      statusCode: 403,
-      body: "Verification token mismatch",
-    };
   }
 
   // Handle notifications
