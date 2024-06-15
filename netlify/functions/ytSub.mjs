@@ -7,24 +7,24 @@ export async function handler(event, context) {
       statusCode: 200,
       body: query["hub.challenge"],
     };
-  }
-
-  // Handle notifications
-  if (event.httpMethod === "POST") {
+  } else if (event.httpMethod === "POST") {
     const body = event.body;
     console.log("Notification received:", body);
 
-    // Your logic to handle the new video upload
-    // For example, you can parse the XML body and extract relevant information
+    // Update playlist data (runs update lambda function)
+    const res = await fetch(
+      `https://elimservices.netlify.app/.netlify/functions/setVidListBlob`
+    );
+    const data = await res.json();
 
     return {
       statusCode: 200,
       body: "Notification received successfully",
     };
+  } else {
+    return {
+      statusCode: 400,
+      body: "Invalid request",
+    };
   }
-
-  return {
-    statusCode: 400,
-    body: "Invalid request",
-  };
 }
