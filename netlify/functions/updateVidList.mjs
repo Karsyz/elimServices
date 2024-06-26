@@ -5,12 +5,12 @@ export default async (req) => {
         const res = await fetch('http://elimservices.netlify.app/.netlify/functions/setVidListBlob', {
             method: 'GET', 
         });
-        console.log('Update successful', res)
+        console.log('Update call successful')
     } catch (error) {
-        console.error('Call failed', error)
+        console.error('Update call failed', error)
     }
 }
 
 export const config = {
-    schedule: "10 18 * * *"
+    schedule: "0 18 * * *"
 }
