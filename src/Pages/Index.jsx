@@ -2,16 +2,15 @@ import { useState, useEffect } from "react";
 
 const Index = () => {
   const [links, setLinks] = useState([]);
-  // content.sort((a, b) => a.date - b.date)
-
   const [currentVid, setCurrentVid] = useState("");
 
   const handleFetchData = async () => {
     const res = await fetch(`/.netlify/functions/getVids`);
     const data = await res.json();
-    setLinks(data.items);
+    const currInd = 0
+    handleSelected(data.items, currInd)
     setCurrentVid(
-      `https://www.youtube.com/embed/${data.items[0]?.snippet?.resourceId?.videoId}?si=yZ4Vp14zKTVIpxV0`
+      `https://www.youtube.com/embed/${data.items[currInd]?.snippet?.resourceId?.videoId}?si=yZ4Vp14zKTVIpxV0`
     );
   };
 
@@ -21,12 +20,12 @@ const Index = () => {
 
   const handleCurrentVid = (vid, index) => {
     setCurrentVid(`https://www.youtube.com/embed/${vid}?si=yZ4Vp14zKTVIpxV0`);
-    handleSelected(index);
+    handleSelected(links, index);
   };
 
-  const handleSelected = (index) => {
+  const handleSelected = (data, index) => {
     setLinks(
-      links.map((el, ind) => {
+      data.map((el, ind) => {
         if (ind === index) {
           return { ...el, selected: true };
         } else {
@@ -67,7 +66,7 @@ const Index = () => {
             return (
               <li
                 key={ind}
-                className="cursor-pointer sm:text-lg p-4 pr-4 rounded-md hover:!bg-[#a2dbc2] w-full sm:max-w-[300px]"
+                className="cursor-pointer sm:text-lg p-4 pr-4 rounded-md hover:!bg-[#a2dbc2] transition-colors duration-200 ease-in-out w-full sm:max-w-[300px]"
                 onClick={() =>
                   handleCurrentVid(el?.snippet?.resourceId?.videoId, ind)
                 }
@@ -75,12 +74,11 @@ const Index = () => {
                   background: el.selected ? "#8CD2B4" : "#8CAAD2",
                 }}
               >
-                
                 <h4 className="font-bold text-xl">{el.snippet.title}</h4>
-                <span className="font-semibold">{new Date(el?.snippet?.publishedAt).toString().slice(4, 15)}</span>
-                <p className="italic">
-                  {el.snippet.description}
-                </p>
+                <span className="font-semibold">
+                  {new Date(el?.snippet?.publishedAt).toString().slice(4, 15)}
+                </span>
+                <p className="italic">{el.snippet.description}</p>
               </li>
             );
           })}
